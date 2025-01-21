@@ -16,18 +16,27 @@ import {
 import { apiClient } from "@/lib/api";
 import { NavLink, useLocation } from "react-router";
 import { type UUID } from "@elizaos/core";
-import { Book, Cog, User } from "lucide-react";
+import { Book, Cog, User, KeyRound } from "lucide-react";
 import ConnectionStatus from "./connection-status";
+import { useStoredApiKeys } from "@/hooks/use-localstorage-apikeys";
 
 export function AppSidebar() {
     const location = useLocation();
+    const [storedKeys] = useStoredApiKeys();
+
     const query = useQuery({
-        queryKey: ["agents"],
-        queryFn: () => apiClient.getAgents(),
+        queryKey: [],
+        queryFn: () => apiClient.getAgents(storedKeys),
         refetchInterval: 5_000,
     });
 
-    const agents = query?.data?.agents;
+    const agents = query?.data?.flatMap(
+        (a) =>
+            a.result?.agents?.map((agent) => ({
+                ...agent,
+                origin: a.origin,
+            })) || []
+    );
 
     return (
         <Sidebar>
@@ -72,10 +81,18 @@ export function AppSidebar() {
                             ) : (
                                 <div>
                                     {agents?.map(
-                                        (agent: { id: UUID; name: string }) => (
+                                        (agent: {
+                                            id: UUID;
+                                            name: string;
+                                            origin: string;
+                                        }) => (
                                             <SidebarMenuItem key={agent.id}>
                                                 <NavLink
-                                                    to={`/chat/${agent.id}`}
+                                                    to={`/chat/${agent.id}${
+                                                        agent.origin
+                                                            ? `?origin=${agent.origin}`
+                                                            : ""
+                                                    }`}
                                                 >
                                                     <SidebarMenuButton
                                                         isActive={location.pathname.includes(
@@ -106,6 +123,13 @@ export function AppSidebar() {
                         >
                             <SidebarMenuButton>
                                 <Book /> Documentation
+                            </SidebarMenuButton>
+                        </NavLink>
+                    </SidebarMenuItem>
+                    <SidebarMenuItem>
+                        <NavLink to="/api_keys">
+                            <SidebarMenuButton>
+                                <KeyRound /> Api Keys
                             </SidebarMenuButton>
                         </NavLink>
                     </SidebarMenuItem>

@@ -27,6 +27,8 @@ import * as fs from "fs";
 import * as path from "path";
 import { createVerifiableLogApiRouter } from "./verifiable-log-api.ts";
 import OpenAI from "openai";
+import { Server } from "http";
+import authenticate from "./authentication.ts";
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -111,7 +113,7 @@ Response format should be formatted in a JSON block like this:
 export class DirectClient {
     public app: express.Application;
     private agents: Map<string, AgentRuntime>; // container management
-    private server: any; // Store server instance
+    private server: Server; // Store server instance
     public startAgent: Function; // Store startAgent functor
 
     constructor() {
@@ -122,6 +124,8 @@ export class DirectClient {
 
         this.app.use(bodyParser.json());
         this.app.use(bodyParser.urlencoded({ extended: true }));
+
+        this.app.use(authenticate);
 
         // Serve both uploads and generated images
         this.app.use(

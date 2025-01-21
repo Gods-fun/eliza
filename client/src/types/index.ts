@@ -3,3 +3,10 @@ export interface IAttachment {
     contentType: string;
     title: string;
 }
+
+export type ApiKey = {
+    name: string;
+    origin: string;
+    apiKey: string;
+    publicKey: string;
+};

@@ -11,6 +11,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import { UUID } from "@elizaos/core";
 import { apiClient } from "@/lib/api";
+import { useSearchParams } from "react-router";
+import { useStoredApiKeys } from "@/hooks/use-localstorage-apikeys";
 
 type Props = {
     agentId: UUID;
@@ -41,6 +43,10 @@ export const AudioRecorder = ({
     onChange,
 }: Props) => {
     const { toast } = useToast();
+    const [searchParams] = useSearchParams();
+    const origin = searchParams.get("origin") ?? undefined;
+    const [storedKeys] = useStoredApiKeys();
+
     // States
     const [isRecording, setIsRecording] = useState<boolean>(false);
     // @ts-expect-error - isRecordingFinished is unused, but would break the 2D array if removed
@@ -79,7 +85,7 @@ export const AudioRecorder = ({
 
     const mutation = useMutation({
         mutationKey: ["whisper"],
-        mutationFn: (file: Blob) => apiClient.whisper(agentId, file),
+        mutationFn: (file: Blob) => apiClient.whisper(agentId, file, origin, storedKeys),
         onSuccess: (data: { text: string }) => {
             if (data?.text) {
                 onChange(data.text);

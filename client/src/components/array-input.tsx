@@ -14,7 +14,12 @@ export default function ArrayInput({
             <div className="p-2 bg-card rounded-md border">
                 <div className="space-y-2">
                     {data?.map((b: string, idx: number) => (
-                        <Input value={b} key={idx} className="bg-background" />
+                        <Input
+                            value={b}
+                            key={idx}
+                            className="bg-background"
+                            readOnly
+                        />
                     ))}
                 </div>
             </div>

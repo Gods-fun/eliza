@@ -9,6 +9,8 @@ import Chat from "./routes/chat";
 import Overview from "./routes/overview";
 import Home from "./routes/home";
 import useVersion from "./hooks/use-version";
+import ApiKeys from "./routes/api-keys";
+import SolanaWalletProvider from "./components/solana-wallet-provider";
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -29,27 +31,36 @@ function App() {
                 }}
             >
                 <BrowserRouter>
-                    <TooltipProvider delayDuration={0}>
-                        <SidebarProvider>
-                            <AppSidebar />
-                            <SidebarInset>
-                                <div className="flex flex-1 flex-col gap-4 size-full container">
-                                    <Routes>
-                                        <Route path="/" element={<Home />} />
-                                        <Route
-                                            path="chat/:agentId"
-                                            element={<Chat />}
-                                        />
-                                        <Route
-                                            path="settings/:agentId"
-                                            element={<Overview />}
-                                        />
-                                    </Routes>
-                                </div>
-                            </SidebarInset>
-                        </SidebarProvider>
-                        <Toaster />
-                    </TooltipProvider>
+                    <SolanaWalletProvider>
+                        <TooltipProvider delayDuration={0}>
+                            <SidebarProvider>
+                                <AppSidebar />
+                                <SidebarInset>
+                                    <div className="flex flex-1 flex-col gap-4 size-full container">
+                                        <Routes>
+                                            <Route
+                                                path="/"
+                                                element={<Home />}
+                                            />
+                                            <Route
+                                                path="chat/:agentId"
+                                                element={<Chat />}
+                                            />
+                                            <Route
+                                                path="settings/:agentId"
+                                                element={<Overview />}
+                                            />
+                                            <Route
+                                                path="api_keys"
+                                                element={<ApiKeys />}
+                                            />
+                                        </Routes>
+                                    </div>
+                                </SidebarInset>
+                            </SidebarProvider>
+                            <Toaster />
+                        </TooltipProvider>
+                    </SolanaWalletProvider>
                 </BrowserRouter>
             </div>
         </QueryClientProvider>
