@@ -22,6 +22,8 @@ import AIWriter from "react-aiwriter";
 import { IAttachment } from "@/types";
 import { AudioRecorder } from "./audio-recorder";
 import { Badge } from "./ui/badge";
+import { useStoredApiKeys } from "@/hooks/use-localstorage-apikeys";
+import { useSearchParams } from "react-router";
 
 interface ExtraContentFields {
     user: string;
@@ -33,8 +35,13 @@ type ContentWithUser = Content & ExtraContentFields;
 
 export default function Page({ agentId }: { agentId: UUID }) {
     const { toast } = useToast();
+    const [searchParams] = useSearchParams();
+    const origin = searchParams.get("origin") ?? undefined;
+    const [storedKeys] = useStoredApiKeys();
+
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [input, setInput] = useState("");
+
     const messagesContainerRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLTextAreaElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -123,7 +130,7 @@ export default function Page({ agentId }: { agentId: UUID }) {
         }: {
             message: string;
             selectedFile?: File | null;
-        }) => apiClient.sendMessage(agentId, message, selectedFile),
+        }) => apiClient.sendMessage(agentId, message, selectedFile, origin, storedKeys),
         onSuccess: (newMessages: ContentWithUser[]) => {
             queryClient.setQueryData(
                 ["messages", agentId],

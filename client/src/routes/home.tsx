@@ -13,24 +13,32 @@ import { apiClient } from "@/lib/api";
 import { NavLink } from "react-router";
 import { UUID } from "@elizaos/core";
 import { formatAgentName } from "@/lib/utils";
+import { useStoredApiKeys } from "@/hooks/use-localstorage-apikeys";
 
 export default function Home() {
+    const [storedKeys] = useStoredApiKeys();
+
     const query = useQuery({
         queryKey: ["agents"],
-        queryFn: () => apiClient.getAgents(),
-        refetchInterval: 5_000
+        queryFn: () => apiClient.getAgents(storedKeys),
+        refetchInterval: 5_000,
     });
 
-    const agents = query?.data?.agents;
-
+    const agents = query?.data?.flatMap(
+        (a) =>
+            a.result?.agents?.map((agent) => ({
+                ...agent,
+                origin: a.origin,
+            })) || []
+    );
     return (
         <div className="flex flex-col gap-4 h-full p-4">
             <PageTitle title="Agents" />
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {agents?.map((agent: { id: UUID; name: string }) => (
+                {agents?.map((agent: { id: UUID; name: string; origin: string }) => (
                     <Card key={agent.id}>
                         <CardHeader>
-                            <CardTitle>{agent?.name}</CardTitle>
+                            <CardTitle className="break-all">{agent?.name} - {agent?.origin}</CardTitle>
                         </CardHeader>
                         <CardContent>
                             <div className="rounded-md bg-muted aspect-square w-full grid place-items-center">
@@ -42,7 +50,11 @@ export default function Home() {
                         <CardFooter>
                             <div className="flex items-center gap-4 w-full">
                                 <NavLink
-                                    to={`/chat/${agent.id}`}
+                                    to={`/chat/${agent.id}${
+                                        agent.origin
+                                            ? `?origin=${agent.origin}`
+                                            : ""
+                                    }`}
                                     className="w-full grow"
                                 >
                                     <Button
@@ -53,7 +65,11 @@ export default function Home() {
                                     </Button>
                                 </NavLink>
                                 <NavLink
-                                    to={`/settings/${agent.id}`}
+                                    to={`/settings/${agent.id}${
+                                        agent.origin
+                                            ? `?origin=${agent.origin}`
+                                            : ""
+                                    }`}
                                     key={agent.id}
                                 >
                                     <Button size="icon" variant="outline">

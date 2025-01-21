@@ -5,6 +5,8 @@ import { useRef, useState } from "react";
 import { apiClient } from "@/lib/api";
 import { Tooltip, TooltipTrigger, TooltipContent } from "../tooltip";
 import { useToast } from "@/hooks/use-toast";
+import { useSearchParams } from "react-router";
+import { useStoredApiKeys } from "@/hooks/use-localstorage-apikeys";
 
 export default function ChatTtsButton({
     agentId,
@@ -14,13 +16,17 @@ export default function ChatTtsButton({
     text: string;
 }) {
     const { toast } = useToast();
+    const [searchParams] = useSearchParams();
+    const origin = searchParams.get("origin") ?? undefined;
+    const [storedKeys] = useStoredApiKeys();
+
     const [playing, setPlaying] = useState<boolean>(false);
     const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
     const audioRef = useRef<HTMLAudioElement | null>(null);
 
     const mutation = useMutation({
         mutationKey: ["tts", text],
-        mutationFn: () => apiClient.tts(agentId, text),
+        mutationFn: () => apiClient.tts(agentId, text, origin, storedKeys),
         onSuccess: (data) => {
             setAudioBlob(data);
             play();
